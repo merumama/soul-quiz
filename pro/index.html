@@ -1,0 +1,884 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>魂診断 PRO | ソウルダイエット</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+:root{
+  --bg:#0d0620;--bg2:#1e0e3e;
+  --gold:#c9a84c;--gold2:#e8d07a;
+  --purple:#7c3aed;--purple2:#9f5ff8;
+  --fire:#e05a2b;--fire-light:#fff3ee;
+  --water:#2b7de0;--water-light:#eef5ff;
+  --wind:#2bb567;--wind-light:#eefff5;
+  --earth:#7c5c1e;--earth-light:#fdf6e8;
+  --text:#1e1035;--muted:#6b5b8a;--light:#f0e8ff;
+  --card:#fff;--shadow:0 8px 40px rgba(0,0,0,.35);--r:18px;
+}
+body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);min-height:100vh;color:var(--light);overflow-x:hidden}
+body::before{content:'';position:fixed;inset:0;background-image:radial-gradient(circle,rgba(255,255,255,.7) 1px,transparent 1px);background-size:48px 48px;opacity:.08;pointer-events:none;z-index:0}
+#app{position:relative;z-index:1;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:24px 16px 48px}
+.screen{display:none;width:100%;max-width:500px;animation:fadeUp .35s ease}
+.screen.active{display:block}
+@keyframes fadeUp{from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:translateY(0)}}
+
+/* PRO BADGE */
+.pro-badge{display:inline-block;background:linear-gradient(135deg,var(--gold),var(--gold2));color:#3d2800;font-size:10px;font-weight:700;letter-spacing:2px;padding:3px 9px;border-radius:20px;vertical-align:middle;margin-left:8px}
+
+/* LOGO */
+.logo{text-align:center;margin-bottom:28px}
+.logo-star{font-size:44px;line-height:1;margin-bottom:6px;display:block}
+.logo-label{font-size:11px;letter-spacing:4px;color:var(--gold);text-transform:uppercase;margin-bottom:4px}
+.logo-title{font-size:26px;font-weight:700;color:#fff}
+.logo-sub{font-size:12px;color:rgba(255,255,255,.45);margin-top:6px}
+
+/* CARD */
+.card{background:var(--card);border-radius:var(--r);padding:24px 20px;box-shadow:var(--shadow);color:var(--text)}
+.card-title{font-size:17px;font-weight:700;color:var(--text);margin-bottom:8px;text-align:center}
+.card-desc{font-size:13px;color:var(--muted);line-height:1.75;text-align:center;margin-bottom:18px}
+
+/* CHOICE */
+.choice{display:flex;align-items:center;gap:14px;width:100%;padding:18px 16px;background:rgba(255,255,255,.06);border:1.5px solid rgba(255,255,255,.1);border-radius:16px;cursor:pointer;text-align:left;transition:all .2s ease;margin-bottom:10px}
+.choice:hover,.choice:active{border-color:var(--gold);background:rgba(255,255,255,.1);transform:translateY(-2px)}
+.choice-icon{font-size:36px;flex-shrink:0}
+.choice-t{font-size:15px;font-weight:700;color:#fff;margin-bottom:2px}
+.choice-d{font-size:12px;color:rgba(255,255,255,.5);line-height:1.5}
+
+/* BUTTONS */
+.btn{display:block;width:100%;padding:14px 20px;border:none;border-radius:12px;font-family:'Noto Sans JP',sans-serif;font-size:15px;font-weight:500;cursor:pointer;transition:all .2s ease;text-align:center}
+.btn+.btn{margin-top:10px}
+.btn-primary{background:linear-gradient(135deg,#4a2c8a,var(--purple));color:#fff;box-shadow:0 4px 18px rgba(124,58,237,.4)}
+.btn-primary:hover{transform:translateY(-1px)}
+.btn-gold{background:linear-gradient(135deg,var(--gold),var(--gold2));color:#3d2800;font-weight:700;box-shadow:0 4px 18px rgba(201,168,76,.35)}
+.btn-outline{background:transparent;color:var(--muted);border:1.5px solid #ddd;font-size:14px}
+.btn-outline:hover{background:#f5f0ff}
+
+/* QUIZ */
+.quiz-meta{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.quiz-num{font-size:12px;letter-spacing:2px;color:var(--gold)}
+.quiz-frac{font-size:12px;color:rgba(255,255,255,.4)}
+.progress{height:4px;background:rgba(255,255,255,.12);border-radius:2px;overflow:hidden;margin-bottom:14px}
+.progress-bar{height:100%;background:linear-gradient(90deg,var(--gold),var(--gold2));border-radius:2px;transition:width .35s ease}
+.quiz-card{background:var(--card);border-radius:var(--r);padding:24px 20px;box-shadow:var(--shadow)}
+.quiz-q{font-size:16px;font-weight:700;color:var(--text);line-height:1.65;margin-bottom:16px}
+.opts{display:flex;flex-direction:column;gap:8px}
+.opt{display:flex;align-items:flex-start;gap:11px;padding:12px 14px;background:#f6f2ff;border:1.5px solid #e5dbff;border-radius:10px;cursor:pointer;font-family:'Noto Sans JP',sans-serif;font-size:14px;color:var(--text);line-height:1.5;text-align:left;transition:all .15s ease}
+.opt:hover,.opt:active{background:#ede4ff;border-color:var(--purple)}
+.opt-n{font-size:11px;font-weight:700;color:#9575cd;flex-shrink:0;min-width:16px;padding-top:1px}
+.encourage{text-align:center;padding:8px 0 12px;font-size:13px;color:var(--gold2);animation:pop .4s ease}
+@keyframes pop{from{transform:scale(.85);opacity:0}to{transform:scale(1);opacity:1}}
+
+/* INPUT */
+.inp{width:100%;padding:13px 15px;font-family:'Noto Sans JP',sans-serif;font-size:16px;border:2px solid #e0d4f5;border-radius:10px;color:var(--text);outline:none;transition:border-color .2s;margin-bottom:6px}
+.inp:focus{border-color:var(--purple)}
+.inp-hint{font-size:12px;color:var(--muted);margin-bottom:16px;line-height:1.6}
+.err{background:#fff5f5;border:1px solid #ffcccc;border-radius:8px;padding:11px 13px;font-size:13px;color:#c0392b;line-height:1.6;margin-top:10px}
+
+/* SELECT */
+.sel{width:100%;padding:12px 15px;font-family:'Noto Sans JP',sans-serif;font-size:15px;border:2px solid #e0d4f5;border-radius:10px;color:var(--text);background:#fff;outline:none;cursor:pointer;margin-bottom:12px}
+.sel:focus{border-color:var(--purple)}
+
+/* LOADING */
+.loading{text-align:center;padding:60px 0}
+.spinner{width:52px;height:52px;border:3px solid rgba(255,255,255,.12);border-top-color:var(--gold);border-radius:50%;animation:spin .75s linear infinite;margin:0 auto 18px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-t{font-size:14px;color:rgba(255,255,255,.5)}
+
+/* TABS */
+.tabs{display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap}
+.tab-btn{flex:1;min-width:70px;padding:8px 10px;background:rgba(255,255,255,.08);border:1.5px solid rgba(255,255,255,.15);border-radius:8px;color:rgba(255,255,255,.6);font-family:'Noto Sans JP',sans-serif;font-size:12px;cursor:pointer;transition:all .2s;text-align:center}
+.tab-btn.active{background:rgba(201,168,76,.2);border-color:var(--gold);color:var(--gold2);font-weight:700}
+.tab-pane{display:none}
+.tab-pane.active{display:block}
+
+/* RESULT TYPE */
+.res-head{text-align:center;margin-bottom:16px}
+.res-emoji{font-size:58px;line-height:1;margin-bottom:6px}
+.res-badge{font-size:11px;letter-spacing:3px;color:var(--gold);margin-bottom:4px}
+.res-name{font-size:28px;font-weight:700;margin-bottom:4px}
+.res-tag{font-size:13px;color:var(--muted)}
+.divider{height:1px;background:linear-gradient(90deg,transparent,#ddd,transparent);margin:16px 0}
+
+/* SUMMARY POINTS */
+.pts{display:flex;flex-direction:column;gap:12px}
+.pt{display:flex;gap:10px;align-items:flex-start}
+.pt-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;margin-top:6px}
+.pt-lbl{font-size:11px;font-weight:700;letter-spacing:.5px;margin-bottom:2px}
+.pt-txt{font-size:14px;color:var(--text);line-height:1.6}
+
+/* DETAIL GRID */
+.detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.detail-item{background:#f8f4ff;border-radius:10px;padding:12px 13px}
+.detail-lbl{font-size:11px;color:var(--purple);font-weight:700;margin-bottom:4px}
+.detail-val{font-size:13px;color:var(--text);line-height:1.5}
+
+/* FOOD */
+.food-block{background:#f9f6ff;border-radius:12px;padding:16px;margin-bottom:12px}
+.food-title{font-size:12px;font-weight:700;color:var(--purple);margin-bottom:6px;letter-spacing:.5px}
+.food-text{font-size:13px;color:var(--text);line-height:1.75;white-space:pre-line}
+
+/* DEEP */
+.deep-item{background:#f8f4ff;border-radius:12px;padding:14px;margin-bottom:10px}
+.deep-lbl{font-size:12px;font-weight:700;color:var(--purple);margin-bottom:6px}
+.deep-val{font-size:13px;color:var(--text);line-height:1.7}
+
+/* SCORE PILLS */
+.score-row{display:flex;justify-content:center;gap:8px;margin-bottom:16px;flex-wrap:wrap}
+.score-pill{display:flex;flex-direction:column;align-items:center;padding:8px 12px;background:#f6f2ff;border-radius:8px;min-width:56px}
+.score-pill-n{font-size:18px;font-weight:700;color:var(--text)}
+.score-pill-l{font-size:11px;color:var(--muted)}
+.score-pill.top{background:#ede4ff;border:1.5px solid var(--purple)}
+.score-pill.top .score-pill-n{color:var(--purple)}
+
+/* TYPE COLORS */
+.t-fire .res-name,.t-fire .pt-lbl,.t-fire .detail-lbl,.t-fire .deep-lbl,.t-fire .food-title{color:var(--fire)}
+.t-fire .pt-dot{background:var(--fire)}
+.t-water .res-name,.t-water .pt-lbl,.t-water .detail-lbl,.t-water .deep-lbl,.t-water .food-title{color:var(--water)}
+.t-water .pt-dot{background:var(--water)}
+.t-wind .res-name,.t-wind .pt-lbl,.t-wind .detail-lbl,.t-wind .deep-lbl,.t-wind .food-title{color:var(--wind)}
+.t-wind .pt-dot{background:var(--wind)}
+.t-earth .res-name,.t-earth .pt-lbl,.t-earth .detail-lbl,.t-earth .deep-lbl,.t-earth .food-title{color:var(--earth-mid,#c8860a)}
+.t-earth .pt-dot{background:#c8860a}
+
+/* THEME RESULT */
+.theme-code{display:inline-block;background:linear-gradient(135deg,#4a2c8a,var(--purple));color:#fff;font-size:15px;font-weight:700;padding:5px 16px;border-radius:20px;margin-bottom:10px}
+.theme-name{font-size:22px;font-weight:700;color:var(--text);margin-bottom:6px}
+.theme-group-pill{font-size:12px;background:#f4eeff;color:var(--purple);border-radius:6px;display:inline-block;padding:4px 10px;margin-bottom:14px;font-weight:500}
+.theme-section{margin-bottom:14px}
+.theme-section-lbl{font-size:11px;font-weight:700;color:var(--purple);letter-spacing:.5px;margin-bottom:6px}
+.theme-section-txt{font-size:14px;color:var(--text);line-height:1.8}
+.theme-reverse{background:#f0e8ff;border-radius:10px;padding:13px;margin-bottom:14px;font-size:13px;color:var(--text);line-height:1.7}
+
+/* SESSION SUPPORT */
+.session-output{background:#f8f4ff;border:2px solid #e0d4f5;border-radius:12px;padding:16px;font-size:13px;color:var(--text);line-height:1.85;white-space:pre-wrap;word-break:break-word;min-height:200px;max-height:500px;overflow-y:auto;margin-bottom:12px;font-family:'Noto Sans JP',sans-serif}
+.copy-btn{background:linear-gradient(135deg,var(--gold),var(--gold2));color:#3d2800;font-weight:700;border:none;border-radius:10px;padding:13px;width:100%;font-family:'Noto Sans JP',sans-serif;font-size:14px;cursor:pointer;transition:all .2s;margin-bottom:8px}
+.copy-btn:hover{transform:translateY(-1px)}
+.hint-box{background:rgba(201,168,76,.1);border:1px solid rgba(201,168,76,.3);border-radius:8px;padding:12px 14px;font-size:12px;color:var(--gold2);line-height:1.7;margin-bottom:14px}
+
+/* MISC */
+.back{display:block;text-align:center;color:rgba(255,255,255,.35);font-size:13px;margin-top:14px;cursor:pointer;text-decoration:underline}
+.back:hover{color:rgba(255,255,255,.6)}
+.footer{text-align:center;font-size:11px;color:rgba(255,255,255,.2);margin-top:22px}
+.mt12{margin-top:12px}
+.mt16{margin-top:16px}
+</style>
+</head>
+<body>
+<div id="app">
+
+<!-- ===== LANDING ===== -->
+<div id="s-landing" class="screen active">
+  <div class="logo">
+    <span class="logo-star">✨</span>
+    <div class="logo-label">Soul Diet</div>
+    <div class="logo-title">魂診断<span class="pro-badge">PRO</span></div>
+    <div class="logo-sub">ユキちゃん専用 完全版</div>
+  </div>
+  <button class="choice" onclick="startQuiz()">
+    <span class="choice-icon">🌟</span>
+    <div>
+      <div class="choice-t">魂タイプ診断（20問・完全版）</div>
+      <div class="choice-d">チャクラ・食事・深掘り情報まで含む詳細診断</div>
+    </div>
+  </button>
+  <button class="choice" onclick="showScreen('s-theme')">
+    <span class="choice-icon">🔮</span>
+    <div>
+      <div class="choice-t">魂テーマ診断（完全版）</div>
+      <div class="choice-d">魂ずれ・逆テーマ・魂が喜ぶ行動まで表示</div>
+    </div>
+  </button>
+  <button class="choice" onclick="showScreen('s-session')">
+    <span class="choice-icon">🪞</span>
+    <div>
+      <div class="choice-t">セッション支援</div>
+      <div class="choice-d">魂テーマ×魂タイプの組み合わせでAI相談用プロンプトを生成</div>
+    </div>
+  </button>
+  <div class="footer">ソウルダイエット｜白男川ユキ 専用ツール</div>
+</div>
+
+<!-- ===== QUIZ ===== -->
+<div id="s-quiz" class="screen">
+  <div class="quiz-meta">
+    <span class="quiz-num" id="q-num">QUESTION 1</span>
+    <span class="quiz-frac" id="q-frac">1 / 20</span>
+  </div>
+  <div class="progress"><div class="progress-bar" id="q-bar" style="width:5%"></div></div>
+  <div id="encourage"></div>
+  <div class="quiz-card">
+    <div class="quiz-q" id="q-text"></div>
+    <div class="opts" id="q-opts"></div>
+  </div>
+  <span class="back" onclick="showScreen('s-landing')">← トップに戻る</span>
+</div>
+
+<!-- ===== THEME INPUT ===== -->
+<div id="s-theme" class="screen">
+  <div class="logo">
+    <span class="logo-star">🔮</span>
+    <div class="logo-title" style="font-size:22px">魂テーマ診断</div>
+  </div>
+  <div class="card">
+    <div class="card-title">生年月日を入力してください</div>
+    <div class="card-desc">生年月日から魂テーマ（今生の使命）を読み解きます</div>
+    <input class="inp" id="bd-input" type="text" placeholder="例：1980年7月24日" oninput="clearErr()">
+    <div class="inp-hint">西暦で入力（例：1980/7/24・19800724・1980年7月24日）</div>
+    <div id="bd-err"></div>
+    <button class="btn btn-primary" onclick="diagnose()">診断する</button>
+    <button class="btn btn-outline mt12" onclick="showScreen('s-landing')">← 戻る</button>
+  </div>
+</div>
+
+<!-- ===== LOADING ===== -->
+<div id="s-loading" class="screen">
+  <div class="loading">
+    <div class="spinner"></div>
+    <div class="loading-t">魂テーマを読み解いています…</div>
+  </div>
+</div>
+
+<!-- ===== RESULT TYPE ===== -->
+<div id="s-res-type" class="screen">
+  <div id="type-card"></div>
+  <span class="back" onclick="showScreen('s-landing')">← トップに戻る</span>
+</div>
+
+<!-- ===== RESULT THEME ===== -->
+<div id="s-res-theme" class="screen">
+  <div id="theme-card"></div>
+  <span class="back" onclick="showScreen('s-landing')">← トップに戻る</span>
+</div>
+
+<!-- ===== SESSION SUPPORT ===== -->
+<div id="s-session" class="screen">
+  <div class="logo">
+    <span class="logo-star">🪞</span>
+    <div class="logo-title" style="font-size:22px">セッション支援</div>
+  </div>
+  <div class="card">
+    <div class="card-title">クライアント情報を入力</div>
+    <div class="card-desc">魂テーマ×魂タイプの組み合わせでAI相談用プロンプトを生成します</div>
+    <label style="font-size:13px;color:var(--muted);margin-bottom:6px;display:block">魂テーマ</label>
+    <select class="sel" id="sess-theme">
+      <option value="">選択してください</option>
+      <option value="1-1">1-1【自分に専念】牡羊座</option>
+      <option value="1-2">1-2【愛を与え自己主張】獅子座</option>
+      <option value="1-3">1-3【知識を探求し広める】射手座</option>
+      <option value="2-1">2-1【しっかりお金を稼ぐ】牡牛座</option>
+      <option value="2-2">2-2【現実的に解決する】乙女座</option>
+      <option value="2-3">2-3【結果にコミット】山羊座</option>
+      <option value="3-1">3-1【相手を理解し喜ばれる】双子座</option>
+      <option value="3-2">3-2【弱い自分をさらけ出す】天秤座</option>
+      <option value="3-3">3-3【皆のことを考えて行動】水瓶座</option>
+      <option value="4-1">4-1【他者を信頼し本音を伝える】蟹座</option>
+      <option value="4-2">4-2【心地よさから出る】蠍座</option>
+      <option value="4-3">4-3【喜びを受け取り与える】魚座</option>
+    </select>
+    <label style="font-size:13px;color:var(--muted);margin-bottom:6px;display:block">魂タイプ</label>
+    <select class="sel" id="sess-type">
+      <option value="">選択してください</option>
+      <option value="wind">🌪 風タイプ</option>
+      <option value="fire">🔥 火タイプ</option>
+      <option value="water">💧 水タイプ</option>
+      <option value="earth">🌱 地タイプ</option>
+    </select>
+    <label style="font-size:13px;color:var(--muted);margin-bottom:6px;display:block">クライアントの状況・悩み（任意）</label>
+    <textarea class="inp" id="sess-context" rows="3" placeholder="例：停滞期が続いている、感情食いが多い、など" style="resize:vertical;margin-bottom:16px"></textarea>
+    <button class="btn btn-primary" onclick="generatePrompt()">プロンプトを生成する</button>
+  </div>
+  <div id="sess-output" style="display:none;margin-top:14px">
+    <div class="hint-box">下のプロンプトをコピーして、ClaudeやChatGPTに貼り付けてください ✨</div>
+    <div class="session-output" id="sess-text"></div>
+    <button class="copy-btn" onclick="copyPrompt()">📋 プロンプトをコピーする</button>
+    <button class="btn btn-outline" onclick="document.getElementById('sess-output').style.display='none'">もう一度入力する</button>
+  </div>
+  <span class="back" onclick="showScreen('s-landing')">← トップに戻る</span>
+</div>
+
+</div><!-- /app -->
+
+<script>
+// ============================================================
+// QUIZ DATA (20問 1=風 2=火 3=水 4=地)
+// ============================================================
+const QS = [
+  {q:"自分にとって「安心できる状態」とは？",o:["自由に動けること","はっきりした目標があること","愛され、受け入れられていること","安定した環境とルールがあること"]},
+  {q:"決断するときに大事にしていることは？",o:["ピンとくる直感","効率と結果","周囲との調和","根拠やデータ"]},
+  {q:"休日の過ごし方として一番近いのは？",o:["気の向くままに出かける","アクティブに予定をこなす","ゆったりリラックス","家の中で整える・片付け"]},
+  {q:"ストレスを感じるときの特徴は？",o:["飽きて集中できない","イライラして攻撃的になる","不安になって涙が出る","固まり動けなくなる"]},
+  {q:"子どもの頃、どんなタイプだったと思いますか？",o:["好奇心旺盛で落ち着きがなかった","負けず嫌いで何でも一番になりたがった","友だちと仲良くするのが得意だった","物静かでマイペースだった"]},
+  {q:"自分にとって「理想のリーダー像」は？",o:["柔軟で面白い発想を持っている人","熱く情熱的に引っ張ってくれる人","思いやりがあり寄り添ってくれる人","冷静で堅実に道を示してくれる人"]},
+  {q:"初めての場所に行くとどう感じる？",o:["ワクワクする！","目的を果たせるかが気になる","緊張してしまう","まず情報を調べて準備する"]},
+  {q:"人に褒められると嬉しい言葉は？",o:["発想が面白い！","行動力がすごい！","優しいね、癒される","丁寧で安心できる"]},
+  {q:"目標を立てたときにありがちなことは？",o:["新しいアイデアに飛びついて脱線する","過集中して空回りする","なかなか始められない","やらなくていい理由を探してしまう"]},
+  {q:"ダイエットに関して一番共感する悩みは？",o:["続かない・飽きる","やりすぎてしまう","やろうと思っても動けない","頭で考えすぎて行動が止まる"]},
+  {q:"つい買ってしまうものは？",o:["流行りの面白いアイテム","成果が出そうなグッズ","癒される雑貨やアロマ","実用性の高い日用品"]},
+  {q:"人間関係での失敗あるあるは？",o:["相手の話をちゃんと聞いてなかった","言いすぎてしまった","空気を読みすぎて疲れた","慎重すぎて距離が縮まらなかった"]},
+  {q:"子どもの頃の遊び方の傾向は？",o:["ごっこ遊び・空想遊びが好き","競争ゲームで燃えていた","お世話ごっこや人形遊びが好き","積み木やルールのある遊びが好き"]},
+  {q:"行動が止まるときのパターンは？",o:["面白みを感じなくなった","結果が出ないと落ち込んだ","誰かの反応を気にしてしまう","完璧を求めて動けなくなった"]},
+  {q:"周囲の人からどんな性格だと言われることが多いですか？",o:["明るくてユニーク、自由な雰囲気がある","頼りがいがある、目標に向かって努力できる人","優しくて思いやりがある、親しみやすい","落ち着いていて安定感がある、癒し系"]},
+  {q:"あなたが「変わりたい」と感じる点に一番近いのは？",o:["自分に集中できる時間をもっとつくりたい","焦らず、もっとゆったり過ごせるようになりたい","感情に左右されすぎないようになりたい","変化を楽しみながら柔軟に生きたい"]},
+  {q:"好きな食べ物の傾向は？",o:["軽くて香りのあるもの","スパイシーで刺激的なもの","水分多めでやさしい味","しっかりした噛みごたえのあるもの"]},
+  {q:"自分の「長所」だと感じることに一番近いのはどれですか？",o:["柔軟で適応力がある","努力家で粘り強い","思いやりがあり、共感できる","落ち着いていて安定している"]},
+  {q:"旅行に行くならどんな旅が好き？",o:["ノープランでぶらり旅","アクティブな冒険系","温泉・癒し系の宿","ガイド付きでしっかり予定がある旅"]},
+  {q:"あなたの「理想のライフスタイル」に一番近いものは？",o:["自由で変化に富んだ毎日","成果を出して自己実現していく日々","愛にあふれた人間関係の中で生きる","安定した暮らしと自分のペースを守れる生活"]}
+];
+// option index: 0=風 1=火 2=水 3=地
+
+// ============================================================
+// TYPES (完全版)
+// ============================================================
+const TYPES = {
+  wind:{
+    emoji:"🌪",name:"風タイプ",tag:"自由・創造・好奇心・軽やかさ",cls:"t-wind",
+    intro:"風タイプは、自由・創造・好奇心・軽やかさのエネルギーに満ちた魂タイプです。",
+    summary:[
+      ["性格傾向","好奇心旺盛・社交的・飽きっぽい"],
+      ["体の特徴や傾向","肩首コリ・冷えやすい・脂肪付きやすい"],
+      ["行動特性","気分屋・アイデア重視・ルーティン苦手"],
+      ["チャクラのアンバランス傾向","第５チャクラ過多・第１不足"],
+      ["ダイエットの失敗パターン","三日坊主・情報ジプシー"],
+      ["おすすめのアプローチ","変化あるメニュー・小目標・遊び心"]
+    ],
+    detail:[
+      ["整えたいチャクラ","喉・根"],["朝の習慣","白湯・深呼吸・ストレッチ"],
+      ["おすすめ運動","ダンス・フロー系ヨガ"],["食事キーワード","温・香・彩り"],
+      ["メンタルケア","ジャーナリング・空想時間"],["グラウンディング食材","根菜・雑穀"],
+      ["リズム作り","音楽・タイマー法"],["水分補給","ハーブティー・白湯"],
+      ["休息","デジタルデトックス"],["人間関係","フレンドリーだが境界設定"],
+      ["学習スタイル","体験型・ワークショップ"],["ご褒美","旅・アート巡り"]
+    ],
+    food:{
+      目的:"地に足をつけ、気分の波を安定させる",
+      食材:"根菜類、温かい汁物、雑穀ご飯、発酵食品",
+      こだわり:"冷えやすく飽きやすい体質に「温・軽・変化ある献立」\n見た目や香りを楽しめるように「感覚を刺激する彩り」も意識\n朝の温白湯や夕食のグラウンディング食材（芋・根菜など）で安定性をサポート"
+    },
+    darkness:"わかってもらいたがる、逃げる、同情心、相手を軽く見る",
+    breakthrough:"「すぐ逃げる」からの「ごめんと言う」へ",
+    hormone:"ドーパミン",value:"本音、人類愛⇔固執した愛",goal:"楽になりたい（楽しくいたい）",
+    color:"カジュアル、ハワイアン、コットン、カラフル、軽さ、新緑、花畑"
+  },
+  fire:{
+    emoji:"🔥",name:"火タイプ",tag:"情熱・達成意欲・自己実現",cls:"t-fire",
+    intro:"火タイプは、情熱・達成意欲・自己実現への力に満ちた魂タイプです。",
+    summary:[
+      ["性格傾向","情熱的・目標志向・行動力・短気"],
+      ["体の特徴や傾向","筋肉質・胃腸酷使・上半身熱感"],
+      ["行動特性","チャレンジ好き・競争心・結果重視"],
+      ["チャクラのアンバランス傾向","第３チャクラ過多・第４不足気味"],
+      ["ダイエットの失敗パターン","燃え尽き・過剰トレ・短期極端"],
+      ["おすすめのアプローチ","短期集中＋クールダウン・達成記録"]
+    ],
+    detail:[
+      ["整えたいチャクラ","太陽神経叢・心"],["朝の習慣","レモン白湯・感謝ノート"],
+      ["おすすめ運動","HIIT＋クールヨガ"],["食事キーワード","温・辛すぎ注意"],
+      ["メンタルケア","クールダウン時間"],["睡眠","23時前就寝推奨"],
+      ["呼吸法","腹式・4-7-8"],["冷却食材","きゅうり・ミント"],
+      ["ご褒美","数値可視化・週次レビュー"],["人間関係","主導権握りがち注意"],
+      ["学習スタイル","目標＋デッドライン"],["習慣化ツール","チェックリスト"]
+    ],
+    food:{
+      目的:"行動力の調整と胃腸・感情のクールダウン",
+      食材:"黄色野菜（かぼちゃ・パプリカ）、消化に良い根菜スープ、温野菜",
+      こだわり:"消化器系・太陽神経叢を整えるため「黄色＋温＋消化にやさしい」がベース\nストイックすぎる傾向を緩める「満足感重視のバランス献立」\n刺激を抑えつつ、エネルギーはしっかり保てるように根菜・玄米を活用"
+    },
+    darkness:"怒る、相手が悪い、「やることやってない」と非難、逆切れ、他責",
+    breakthrough:"「イラっとする」からの「じっくり人の話を聞く」へ",
+    hormone:"アドレナリン、テストステロン",value:"大義、使命⇔自分の利益のみ追う",goal:"前に進ませたい",
+    color:"ウォーム、アースカラー、紅葉、アジアン、個性的、かっこいい"
+  },
+  water:{
+    emoji:"💧",name:"水タイプ",tag:"感受性・共感・つながり・癒し",cls:"t-water",
+    intro:"水タイプは、感受性・共感・つながり・癒しのエネルギーに満ちた魂タイプです。",
+    summary:[
+      ["性格傾向","共感力・感受性・内向的・流されやすい"],
+      ["体の特徴や傾向","むくみ・冷え・月経トラブル"],
+      ["行動特性","サポート役・感情優先・変化に慎重"],
+      ["チャクラのアンバランス傾向","第２チャクラ過多・第３不足"],
+      ["ダイエットの失敗パターン","ストレス食い・気持ち優先で計画崩壊"],
+      ["おすすめのアプローチ","温・巡り・感情ログ・仲間ケア"]
+    ],
+    detail:[
+      ["整えたいチャクラ","丹田・喉"],["朝の習慣","白湯＋軽ストレッチ"],
+      ["おすすめ運動","アクア・ピラティス"],["食事キーワード","温・潤・発酵"],
+      ["メンタルケア","アロマ・瞑想"],["水分代謝","ルイボス・ハト麦"],
+      ["自己表現","歌・日記"],["人間関係","ノーと言う練習"],
+      ["睡眠環境","温湿布・安眠音"],["ご褒美","スパ・温泉"],
+      ["学習スタイル","映像＆感覚"],["セルフケア","ハンドマッサージ"]
+    ],
+    food:{
+      目的:"感情の安定とむくみケア、内臓の温め",
+      食材:"発酵食品、根菜、ぬか漬け、味噌汁、あたたかい甘酒",
+      こだわり:"温性の食事で「感情の冷え・むくみ」を緩和\n魚・豆腐・蒸し野菜など、穏やかで柔らかなエネルギーのある献立\nおやつには自然甘味（焼き芋・りんごなど）で血糖と気持ちの安定を"
+    },
+    darkness:"諦め、引っ込み、被害者意識、自己犠牲、本音言わない、自責",
+    breakthrough:"「本音を隠す」からの「自分のことを話し出す」へ",
+    hormone:"オキシトシン",value:"平和、ワンネス⇔身内だけの平和",goal:"安心、安定したい",
+    color:"スモーキー、パステル、涼感、レース、紫陽花、アロマ"
+  },
+  earth:{
+    emoji:"🌱",name:"地タイプ",tag:"安定・信頼・継続・包容力",cls:"t-earth",
+    intro:"地タイプは、安定・信頼・継続・包容力のエネルギーに満ちた魂タイプです。",
+    summary:[
+      ["性格傾向","安定・実直・継続力・慎重"],
+      ["体の特徴や傾向","骨格しっかり・代謝遅め・むくみ下半身"],
+      ["行動特性","計画好き・習慣化得意・変化に抵抗"],
+      ["チャクラのアンバランス傾向","第１チャクラ過多・第５不足"],
+      ["ダイエットの失敗パターン","マンネリ・ご褒美過多・停滞で諦め"],
+      ["おすすめのアプローチ","小さな改善を積み上げ・地台強化"]
+    ],
+    detail:[
+      ["整えたいチャクラ","ルート・喉"],["朝の習慣","ウォーキング"],
+      ["おすすめ運動","スクワット・太極拳"],["食事キーワード","温・淡・雑穀"],
+      ["メンタルケア","ガーデニング"],["姿勢","骨盤立て・足裏感覚"],
+      ["ご褒美","新しい習慣ギア"],["呼吸法","グラウンディング呼吸"],
+      ["学習スタイル","反復・チェック表"],["人間関係","サポートされる練習"],
+      ["休息","デジタルオフ"],["セルフケア","足湯・ほぐし"]
+    ],
+    food:{
+      目的:"代謝促進とめぐりの強化、安心のルーティン化",
+      食材:"雑穀、味噌、青菜、かぼちゃ、里芋など「地に近い」食材",
+      こだわり:"胃腸に優しく満足感が得られる献立で「安定感・安心感」をサポート\n変化が苦手でも取り入れやすい「季節感ある素材と調理法」\nストレスによるドカ食いを防ぐため「一定のリズム」で食事を設計"
+    },
+    darkness:"他人を馬鹿にし始める、自分は賢い、詰問、正論、分かれよというエネルギー",
+    breakthrough:"「人を馬鹿にする」からの「知ってるなら教えてあげよう」へ",
+    hormone:"セロトニン",value:"事実、理解⇔知恵を振りかざす",goal:"完璧にしたい",
+    color:"クール、ブルーベース、白、黒、クラシック、高級、サテン"
+  }
+};
+
+// ============================================================
+// THEMES (完全版)
+// ============================================================
+const THEMES = {
+  "1-1":{
+    name:"自分に専念",zodiac:"牡羊座",revZodiac:"天秤座",group:"火をつける",
+    groupDesc:"人に理解を求めると「承認欲求」にとらわれやすい。自分を徹底的に極めた結果、世間から認められる。",
+    mission:"自分軸で生きる。自らの直感や情熱を信じ、魂に従って行動することで光を発揮する。嫌われてもいい、雰囲気を壊しても本音を語る。その選択が結果的に人を助ける。",
+    misalignment:"焦ったり、怒りっぽくなる。結果を急ぎすぎ、見落としが多くなる。アイデアが結果に結びつかない。",
+    rev:"3-2",revName:"弱い自分をさらけ出す",revDesc:"弱い自分を見せて、他の人に任せようとする",
+    joy:"直感に従って動く／本音を言う／自分でやってみる／人任せにしない"
+  },
+  "1-2":{
+    name:"愛を与え自己主張",zodiac:"獅子座",revZodiac:"水瓶座",group:"火をつける",
+    groupDesc:"人に理解を求めると「承認欲求」にとらわれやすい。自分を徹底的に極めた結果、世間から認められる。",
+    mission:"魂の情熱を大切にし、自らの人生を主役として生きる。常識や正しさではなく、魂が喜ぶことに飛び込むことで自然と周囲にも光を与える。",
+    misalignment:"焦ったり、怒りっぽくなる。結果を急ぎすぎ、見落としが多くなる。アイデアが結果に結びつかない。",
+    rev:"3-3",revName:"皆のことを考えて行動",revDesc:"みんなの意見に流され自分を主張できない",
+    joy:"自分を主役にする／魂の情熱に従う／飛び込んでみる"
+  },
+  "1-3":{
+    name:"知識を探求し広める",zodiac:"射手座",revZodiac:"双子座",group:"火をつける",
+    groupDesc:"人に理解を求めると「承認欲求」にとらわれやすい。自分を徹底的に極めた結果、世間から認められる。",
+    mission:"知識を探求し、それを真理として広める人生を生きる。魂の声に基づいた言葉だけが人に響く。本質に忠実な行動こそが魂の喜び。",
+    misalignment:"焦ったり、怒りっぽくなる。結果を急ぎすぎ、見落としが多くなる。アイデアが結果に結びつかない。",
+    rev:"3-1",revName:"相手を理解し喜ばれる",revDesc:"相手を理解しようとしすぎて自分の真理がぶれる",
+    joy:"本質を語る／直感を信じる／魂との対話に集中する"
+  },
+  "2-1":{
+    name:"しっかりお金を稼ぐ",zodiac:"牡牛座",revZodiac:"蠍座",group:"地に足をつけ体現する",
+    groupDesc:"人格者になろうとすると薄っぺらい。具体的に体現してこそ人格者になる。",
+    mission:"現実の肉体・感覚・所有・豊かさを通じて、自分の人生を確かなものにしていく。物質的豊かさ、お金を稼ぐことに喜びを感じてよい。目の前の暮らしの中に喜びを見出すことが魂の安定と繁栄をもたらす。",
+    misalignment:"深刻になりやすく、頑固でこだわりが強くなる。同じ状況に立ち止まってしまう。我慢しすぎ。物欲が過剰になる。",
+    rev:"4-2",revName:"心地よさから出る",revDesc:"物質的なものより、精神的感情的なものを求める",
+    joy:"目に見える豊かさを手に入れることに喜ぶ／自己価値を高めることに集中／地に足のついた生活"
+  },
+  "2-2":{
+    name:"現実的に解決する",zodiac:"乙女座",revZodiac:"魚座",group:"地に足をつけ体現する",
+    groupDesc:"人格者になろうとすると薄っぺらい。具体的に体現してこそ人格者になる。",
+    mission:"自分にとって本当に必要なものを見極め、地に足のついた生活と奉仕を実践する。まず自分を整え、できることで人に貢献する姿勢が魂の充足をもたらす。",
+    misalignment:"深刻になりやすく、頑固でこだわりが強くなる。同じ状況に立ち止まってしまう。我慢しすぎ。",
+    rev:"4-3",revName:"喜びを受け取り与える",revDesc:"心に向き合いすぎて、現実的な解決にフォーカスできない",
+    joy:"自分の役割を丁寧に果たす／小さなことでも成果を知る／淡々と整える"
+  },
+  "2-3":{
+    name:"結果にコミット",zodiac:"山羊座",revZodiac:"蟹座",group:"地に足をつけ体現する",
+    groupDesc:"人格者になろうとすると薄っぺらい。具体的に体現してこそ人格者になる。",
+    mission:"感情に流されることなく自分を律し、社会的な責任を果たすことで魂が満たされる。他者に依存せず自立した人生を築き、結果を出す力強さが鍵。",
+    misalignment:"深刻になりやすく、頑固でこだわりが強くなる。同じ状況に立ち止まってしまう。我慢しすぎ。",
+    rev:"4-1",revName:"他者を信頼し本音を伝える",revDesc:"感情を重視しすぎて現実の責任を放棄する",
+    joy:"目標を決め計画を立て確実に結果を出す／自分で決めてやり抜く／大人の視点で人間関係を築く"
+  },
+  "3-1":{
+    name:"相手を理解し喜ばれる",zodiac:"双子座",revZodiac:"射手座",group:"他者と関わる",
+    groupDesc:"一人で頑張らない。真剣で嘘のないコミュニケーションを通して世界を変える。",
+    mission:"相手の気持ちやレベルに寄り添った言葉で伝えることが魂の成長を促す。人と心を通わせる中で自分の表現力が育まれる。",
+    misalignment:"思考に振り回され考えすぎる。理論にとらわれ柔軟性がなくなる。人の気持ちをシャットダウンする。",
+    rev:"1-3",revName:"知識を探求し広める",revDesc:"自分の意見を押し通し、相手を見失う",
+    joy:"軽やかに伝える／会話を楽しむ／正しさより共感を大切にする"
+  },
+  "3-2":{
+    name:"弱い自分をさらけ出す",zodiac:"天秤座",revZodiac:"牡羊座",group:"他者と関わる",
+    groupDesc:"一人で頑張らない。真剣で嘘のないコミュニケーションを通して世界を変える。",
+    mission:"他者と対話・協調・パートナーシップを築くことが人生のテーマ。相手の世界やリズムを尊重し、関係性の中で自分を育てていく経験が魂の成熟を促す。",
+    misalignment:"思考に振り回され考えすぎる。理論にとらわれ柔軟性がなくなる。言い訳言い逃れをしだす。",
+    rev:"1-1",revName:"自分に専念",revDesc:"自分一人で解決しようとして孤立しやすくなる",
+    joy:"調和を大切にする／人の話を聞く／人に頼る・依頼する"
+  },
+  "3-3":{
+    name:"皆のことを考えて行動",zodiac:"水瓶座",revZodiac:"獅子座",group:"他者と関わる",
+    groupDesc:"一人で頑張らない。真剣で嘘のないコミュニケーションを通して世界を変える。",
+    mission:"「私は特別」を手放し、フラットな視点で人と関わり社会に役立つ生き方を探求する。他人を輝かせることで自分も満たされる。",
+    misalignment:"思考に振り回され考えすぎる。理論にとらわれ柔軟性がなくなる。言い訳言い逃れをしだす。",
+    rev:"1-2",revName:"愛を与え自己主張",revDesc:"自分ばかりが輝こうとする",
+    joy:"シェアする／仲間と協働する／未来志向で考える"
+  },
+  "4-1":{
+    name:"他者を信頼し本音を伝える",zodiac:"蟹座",revZodiac:"山羊座",group:"全体に浸透させる",
+    groupDesc:"具体的に考えようとすると闇落ちする。見えない世界を大事にした結果、社会（現実）が変わる。",
+    mission:"肩書や責任を手放し、「感じること・つながること」に自分の存在価値を見出す。弱さを見せて人と心を通わせる体験が魂の喜びに変わる。",
+    misalignment:"気持ちの浮き沈みが激しく感情に振り回される。自己逃避・現実逃避。悲劇的でドラマチックになる（罪悪感・被害妄想など）。執着的で依存的。",
+    rev:"2-3",revName:"結果にコミット",revDesc:"現実的な管理思考に偏ってしまう",
+    joy:"感情を感じる／本音でつながる／成果を手放しプロセスを楽しむ"
+  },
+  "4-2":{
+    name:"心地よさから出る",zodiac:"蠍座",revZodiac:"牡牛座",group:"全体に浸透させる",
+    groupDesc:"具体的に考えようとすると闇落ちする。見えない世界を大事にした結果、社会（現実）が変わる。",
+    mission:"表面的な豊かさや安定を超えて、「魂が共鳴する関係性」を深く築くこと。変容と再生を経験することが魂の課題。生活の安定・心地よさから出ることで魂が喜ぶ生き方ができる。",
+    misalignment:"気持ちの浮き沈みが激しく感情に振り回される。自己逃避・現実逃避。悲劇的でドラマチックになる。執着的で依存的。",
+    rev:"2-1",revName:"しっかりお金を稼ぐ",revDesc:"安定にこだわり、魂の深い欲求を抑える",
+    joy:"恐れを超えてつながる／古いものを手放し新しく生まれ変わる／変容を楽しむ"
+  },
+  "4-3":{
+    name:"喜びを受け取り与える",zodiac:"魚座",revZodiac:"乙女座",group:"全体に浸透させる",
+    groupDesc:"具体的に考えようとすると闇落ちする。見えない世界を大事にした結果、社会（現実）が変わる。",
+    mission:"理屈や結果から離れ、感性・直感・夢を信じる生き方を選ぶことで魂が覚醒していく。癒しや芸術、見えない世界とのつながりを通じて愛の存在になることがテーマ。",
+    misalignment:"気持ちの浮き沈みが激しく感情に振り回される。結果主義、自己逃避・現実逃避。悲劇的でドラマチックになる。執着的で依存的。",
+    rev:"2-2",revName:"現実的に解決する",revDesc:"現実的に解決しようとしすぎて直感からズレる",
+    joy:"喜びに従う／プロセスを味わう／感情を信頼する"
+  }
+};
+
+// ============================================================
+// STATE
+// ============================================================
+let scores = {wind:0,fire:0,water:0,earth:0};
+let qIdx = 0;
+
+// ============================================================
+// SCREEN / TAB
+// ============================================================
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0,0);
+}
+
+function showTab(group, id){
+  document.querySelectorAll('.tab-btn[data-group="'+group+'"]').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.tab-pane[data-group="'+group+'"]').forEach(p=>p.classList.remove('active'));
+  document.querySelector('.tab-btn[data-id="'+id+'"]').classList.add('active');
+  document.getElementById(id).classList.add('active');
+}
+
+// ============================================================
+// QUIZ
+// ============================================================
+function startQuiz(){
+  scores={wind:0,fire:0,water:0,earth:0};
+  qIdx=0;
+  showScreen('s-quiz');
+  renderQ();
+}
+
+function renderQ(){
+  const q = QS[qIdx];
+  document.getElementById('q-num').textContent = `QUESTION ${qIdx+1}`;
+  document.getElementById('q-frac').textContent = `${qIdx+1} / 20`;
+  document.getElementById('q-bar').style.width = `${((qIdx+1)/20)*100}%`;
+  document.getElementById('q-text').textContent = q.q;
+  document.getElementById('q-opts').innerHTML = q.o.map((o,i)=>`
+    <button class="opt" onclick="answer(${i})">
+      <span class="opt-n">${i+1}</span><span>${o}</span>
+    </button>`).join('');
+  const enc = document.getElementById('encourage');
+  if(qIdx===10){enc.className='encourage';enc.textContent='あと半分！よく来ましたね✨';}
+  else if(qIdx===15){enc.className='encourage';enc.textContent='あと5問！もうすぐです🌟';}
+  else enc.textContent='';
+}
+
+function answer(i){
+  const keys=['wind','fire','water','earth'];
+  scores[keys[i]]++;
+  qIdx++;
+  if(qIdx>=20) showTypeResult();
+  else renderQ();
+}
+
+// ============================================================
+// TYPE RESULT
+// ============================================================
+function showTypeResult(){
+  const max = Math.max(...Object.values(scores));
+  const order=['wind','fire','water','earth'];
+  const tops = order.filter(k=>scores[k]===max);
+
+  const pillsHtml = order.map(k=>{
+    const lbl={wind:'🌪 風',fire:'🔥 火',water:'💧 水',earth:'🌱 地'};
+    return `<div class="score-pill ${scores[k]===max?'top':''}"><span class="score-pill-n">${scores[k]}</span><span class="score-pill-l">${lbl[k]}</span></div>`;
+  }).join('');
+
+  const headline = tops.length>1
+    ? `あなたは<strong>${tops.map(k=>TYPES[k].name).join('と')}</strong>が同点でした`
+    : `あなたの魂タイプは<strong>${TYPES[tops[0]].name}</strong>でした`;
+
+  let html = `<div class="card" style="margin-bottom:14px;text-align:center">
+    <div style="font-size:14px;color:var(--text);line-height:1.8;margin-bottom:14px">${headline}</div>
+    <div class="score-row" style="margin-bottom:0">${pillsHtml}</div>
+  </div>`;
+
+  for(const key of tops){
+    const t = TYPES[key];
+    const smHtml = t.summary.map(([l,v])=>`
+      <div class="pt">
+        <span class="pt-dot"></span>
+        <div><div class="pt-lbl">${l}</div><div class="pt-txt">${v}</div></div>
+      </div>`).join('');
+
+    const dtHtml = t.detail.map(([l,v])=>`
+      <div class="detail-item">
+        <div class="detail-lbl">${l}</div>
+        <div class="detail-val">${v}</div>
+      </div>`).join('');
+
+    html += `<div class="card ${t.cls}" style="margin-bottom:14px">
+      <div class="res-head">
+        <div class="res-emoji">${t.emoji}</div>
+        <div class="res-badge">魂タイプ</div>
+        <div class="res-name">${t.name}</div>
+        <div class="res-tag">${t.tag}</div>
+      </div>
+      <div class="tabs">
+        <button class="tab-btn active" data-group="${key}" data-id="tb-${key}-s" onclick="showTab('${key}','tb-${key}-s')">基本</button>
+        <button class="tab-btn" data-group="${key}" data-id="tb-${key}-d" onclick="showTab('${key}','tb-${key}-d')">ケアメニュー</button>
+        <button class="tab-btn" data-group="${key}" data-id="tb-${key}-f" onclick="showTab('${key}','tb-${key}-f')">食事</button>
+        <button class="tab-btn" data-group="${key}" data-id="tb-${key}-p" onclick="showTab('${key}','tb-${key}-p')">深掘り</button>
+      </div>
+      <div class="tab-pane active" id="tb-${key}-s" data-group="${key}">
+        <p style="font-size:14px;color:var(--muted);line-height:1.75;margin-bottom:14px">${t.intro}</p>
+        <div class="pts">${smHtml}</div>
+      </div>
+      <div class="tab-pane" id="tb-${key}-d" data-group="${key}">
+        <div class="detail-grid">${dtHtml}</div>
+      </div>
+      <div class="tab-pane" id="tb-${key}-f" data-group="${key}">
+        <div class="food-block">
+          <div class="food-title">目的</div>
+          <div class="food-text">${t.food.目的}</div>
+        </div>
+        <div class="food-block">
+          <div class="food-title">特徴食材</div>
+          <div class="food-text">${t.food.食材}</div>
+        </div>
+        <div class="food-block">
+          <div class="food-title">こだわりポイント</div>
+          <div class="food-text">${t.food.こだわり}</div>
+        </div>
+      </div>
+      <div class="tab-pane" id="tb-${key}-p" data-group="${key}">
+        <div class="deep-item">
+          <div class="deep-lbl">⚡ 闇落ちしたときの傾向</div>
+          <div class="deep-val">${t.darkness}</div>
+        </div>
+        <div class="deep-item">
+          <div class="deep-lbl">💡 ブレイクスルー</div>
+          <div class="deep-val">${t.breakthrough}</div>
+        </div>
+        <div class="deep-item">
+          <div class="deep-lbl">🔬 関連ホルモン</div>
+          <div class="deep-val">${t.hormone}</div>
+        </div>
+        <div class="deep-item">
+          <div class="deep-lbl">💎 価値観</div>
+          <div class="deep-val">${t.value}</div>
+        </div>
+        <div class="deep-item">
+          <div class="deep-lbl">🎯 無意識のゴール</div>
+          <div class="deep-val">${t.goal}</div>
+        </div>
+        <div class="deep-item">
+          <div class="deep-lbl">👗 似合う色・イメージ</div>
+          <div class="deep-val">${t.color}</div>
+        </div>
+      </div>
+    </div>`;
+  }
+
+  html += `<div class="card" style="margin-bottom:4px">
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <button class="btn btn-primary" onclick="showScreen('s-session')">このタイプでセッション支援を開く</button>
+      <button class="btn btn-outline" onclick="startQuiz()">もう一度診断する</button>
+      <button class="btn btn-outline" onclick="showScreen('s-landing')">トップに戻る</button>
+    </div>
+  </div>`;
+
+  document.getElementById('type-card').innerHTML = html;
+  showScreen('s-res-type');
+}
+
+// ============================================================
+// THEME DIAGNOSIS
+// ============================================================
+function clearErr(){ document.getElementById('bd-err').innerHTML=''; }
+
+async function diagnose(){
+  const val = document.getElementById('bd-input').value.trim();
+  if(!val){ document.getElementById('bd-err').innerHTML='<div class="err">生年月日を入力してください</div>'; return; }
+  showScreen('s-loading');
+  try{
+    const res = await fetch('https://soul-theme-api.onrender.com/diagnose',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({birthdate:val})
+    });
+    if(!res.ok){
+      const err = await res.json().catch(()=>({}));
+      const msg = err?.detail?.[0]?.msg || err?.detail || 'エラーが発生しました';
+      showScreen('s-theme');
+      document.getElementById('bd-err').innerHTML=`<div class="err">${sanitize(msg)}</div>`;
+      return;
+    }
+    const data = await res.json();
+    showThemeResult(data, val);
+  }catch(e){
+    showScreen('s-theme');
+    document.getElementById('bd-err').innerHTML=`<div class="err">診断サーバーへの接続に失敗しました。時間をおいて再度お試しください。<br><small>（初回アクセス時は起動に30秒ほどかかる場合があります）</small></div>`;
+  }
+}
+
+function showThemeResult(data, bd){
+  const code = data.soul_theme;
+  const rev  = data.reverse_theme;
+  const t    = THEMES[code];
+  if(!t){ showScreen('s-theme'); document.getElementById('bd-err').innerHTML='<div class="err">テーマ取得に失敗しました（'+sanitize(code)+'）</div>'; return; }
+
+  document.getElementById('theme-card').innerHTML = `
+    <div class="card" style="margin-bottom:14px">
+      <div style="text-align:center;margin-bottom:16px">
+        <div style="font-size:12px;color:var(--muted);margin-bottom:8px">魂テーマ診断結果（完全版）</div>
+        <div class="theme-code">${code}</div>
+        <div class="theme-name">【${t.name}】</div>
+        <div style="font-size:12px;color:var(--muted);margin-bottom:10px">関連星座：${t.zodiac}</div>
+        <span class="theme-group-pill">${t.group}</span>
+        <p style="font-size:13px;color:var(--muted);line-height:1.7;margin-top:8px">${t.groupDesc}</p>
+      </div>
+      <div class="divider"></div>
+      <div class="theme-section">
+        <div class="theme-section-lbl">🧭 魂の願い・ミッション</div>
+        <div class="theme-section-txt">${t.mission}</div>
+      </div>
+      <div class="theme-section">
+        <div class="theme-section-lbl">⚠️ 魂ずれの兆候</div>
+        <div class="theme-section-txt">${t.misalignment}</div>
+      </div>
+      <div class="theme-reverse">
+        <strong>逆テーマ：${rev}【${t.revName}】</strong><br>
+        ${t.revDesc}
+      </div>
+      <div class="theme-section">
+        <div class="theme-section-lbl">✨ 魂が喜ぶ行動・思考</div>
+        <div class="theme-section-txt">${t.joy}</div>
+      </div>
+    </div>
+    <div class="card" style="margin-bottom:4px">
+      <button class="btn btn-primary" onclick="prefillSession('${code}')">このテーマでセッション支援を開く</button>
+      <button class="btn btn-outline mt12" onclick="showScreen('s-theme');clearErr()">別の生年月日で診断する</button>
+      <button class="btn btn-outline mt12" onclick="showScreen('s-landing')">トップに戻る</button>
+    </div>`;
+  showScreen('s-res-theme');
+}
+
+function prefillSession(code){
+  showScreen('s-session');
+  document.getElementById('sess-theme').value = code;
+}
+
+// ============================================================
+// SESSION SUPPORT
+// ============================================================
+function generatePrompt(){
+  const themeCode = document.getElementById('sess-theme').value;
+  const typeKey   = document.getElementById('sess-type').value;
+  const context   = document.getElementById('sess-context').value.trim();
+
+  if(!themeCode || !typeKey){
+    alert('魂テーマと魂タイプを選択してください');
+    return;
+  }
+
+  const th = THEMES[themeCode];
+  const ty = TYPES[typeKey];
+
+  const prompt = `以下のクライアントのソウルダイエットセッション支援をお願いします。
+
+▼ クライアント情報
+魂テーマ：${themeCode}【${th.name}】（グループ：${th.group}）
+魂タイプ：${ty.name}
+${context ? `\n▼ クライアントの状況・悩み\n${context}` : ''}
+
+▼ 魂テーマ詳細
+・魂の願い・ミッション：${th.mission}
+・魂ずれの兆候：${th.misalignment}
+・逆テーマ：${th.rev}【${th.revName}】→${th.revDesc}
+・魂が喜ぶ行動：${th.joy}
+
+▼ 魂タイプ詳細（${ty.name}）
+・性格傾向：${ty.summary[0][1]}
+・体の特徴：${ty.summary[1][1]}
+・行動特性：${ty.summary[2][1]}
+・チャクラ：${ty.summary[3][1]}
+・ダイエット失敗パターン：${ty.summary[4][1]}
+・闇落ち傾向：${ty.darkness}
+・ブレイクスルー：${ty.breakthrough}
+
+▼ 以下の形式でセッション支援分析を行ってください：
+
+🧭 魂の願い・ミッション（この組み合わせでの解釈）
+→
+
+🌪 魂ずれ傾向（テーマ×タイプで起きやすいパターン）
+→
+
+🎯 ダイエット傾向・取り組みポイント
+→
+
+🍽 食事アプローチ
+→
+
+🏃‍♀️ 運動アプローチ
+→
+
+🪞 セッション時の視点・問いかけ（本人に響くツッコミ・問い）
+→`;
+
+  document.getElementById('sess-text').textContent = prompt;
+  document.getElementById('sess-output').style.display = 'block';
+  window.scrollTo(0, document.getElementById('sess-output').offsetTop - 20);
+}
+
+function copyPrompt(){
+  const text = document.getElementById('sess-text').textContent;
+  navigator.clipboard.writeText(text).then(()=>{
+    const btn = document.querySelector('.copy-btn');
+    btn.textContent = '✅ コピーしました！';
+    setTimeout(()=>{ btn.textContent = '📋 プロンプトをコピーする'; }, 2000);
+  }).catch(()=>{
+    const sel = window.getSelection();
+    const range = document.createRange();
+    range.selectNodeContents(document.getElementById('sess-text'));
+    sel.removeAllRanges();
+    sel.addRange(range);
+    alert('テキストを選択しました。Ctrl+Cでコピーしてください。');
+  });
+}
+
+function sanitize(s){
+  return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+</script>
+</body>
+</html>
