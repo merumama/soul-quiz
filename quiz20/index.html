@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>魂タイプ診断（20問）| ソウルダイエット</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+:root{
+  --bg:#0d0620;--bg2:#1e0e3e;
+  --gold:#c9a84c;--gold2:#e8d07a;
+  --purple:#7c3aed;--purple2:#9f5ff8;
+  --text:#1e1035;--muted:#6b5b8a;--light:#f0e8ff;
+  --card:#fff;--shadow:0 8px 40px rgba(0,0,0,.35);--r:18px;
+}
+body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);min-height:100vh;color:var(--light);overflow-x:hidden}
+body::before{content:'';position:fixed;inset:0;background-image:radial-gradient(circle,rgba(255,255,255,.7) 1px,transparent 1px);background-size:48px 48px;opacity:.08;pointer-events:none;z-index:0}
+#app{position:relative;z-index:1;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:24px 16px 48px}
+.screen{display:none;width:100%;max-width:500px;animation:fadeUp .35s ease}
+.screen.active{display:block}
+@keyframes fadeUp{from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:translateY(0)}}
+
+/* LOGO */
+.logo{text-align:center;margin-bottom:28px}
+.logo-star{font-size:44px;line-height:1;margin-bottom:6px;display:block}
+.logo-label{font-size:11px;letter-spacing:4px;color:var(--gold);text-transform:uppercase;margin-bottom:4px}
+.logo-title{font-size:26px;font-weight:700;color:#fff}
+.logo-sub{font-size:13px;color:rgba(255,255,255,.55);margin-top:8px;line-height:1.7}
+
+/* CARD */
+.card{background:var(--card);border-radius:var(--r);padding:24px 20px;box-shadow:var(--shadow);color:var(--text)}
+
+/* BUTTONS */
+.btn{display:block;width:100%;padding:14px 20px;border:none;border-radius:12px;font-family:'Noto Sans JP',sans-serif;font-size:15px;font-weight:500;cursor:pointer;transition:all .2s ease;text-align:center}
+.btn+.btn{margin-top:10px}
+.btn-primary{background:linear-gradient(135deg,#4a2c8a,var(--purple));color:#fff;box-shadow:0 4px 18px rgba(124,58,237,.4)}
+.btn-primary:hover{transform:translateY(-1px)}
+.btn-gold{background:linear-gradient(135deg,var(--gold),var(--gold2));color:#3d2800;font-weight:700;box-shadow:0 4px 18px rgba(201,168,76,.35)}
+.btn-outline{background:transparent;color:var(--muted);border:1.5px solid #ddd;font-size:14px}
+
+/* QUIZ */
+.quiz-meta{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.quiz-num{font-size:12px;letter-spacing:2px;color:var(--gold)}
+.quiz-frac{font-size:12px;color:rgba(255,255,255,.4)}
+.progress{height:4px;background:rgba(255,255,255,.12);border-radius:2px;overflow:hidden;margin-bottom:14px}
+.progress-bar{height:100%;background:linear-gradient(90deg,var(--gold),var(--gold2));border-radius:2px;transition:width .35s ease}
+.quiz-card{background:var(--card);border-radius:var(--r);padding:24px 20px;box-shadow:var(--shadow)}
+.quiz-q{font-size:16px;font-weight:700;color:var(--text);line-height:1.65;margin-bottom:16px}
+.opts{display:flex;flex-direction:column;gap:8px}
+.opt{display:flex;align-items:flex-start;gap:11px;padding:12px 14px;background:#f6f2ff;border:1.5px solid #e5dbff;border-radius:10px;cursor:pointer;font-family:'Noto Sans JP',sans-serif;font-size:14px;color:var(--text);line-height:1.5;text-align:left;transition:all .15s ease}
+.opt:hover,.opt:active{background:#ede4ff;border-color:var(--purple)}
+.opt-n{font-size:11px;font-weight:700;color:#9575cd;flex-shrink:0;min-width:16px;padding-top:1px}
+.encourage{text-align:center;padding:8px 0 12px;font-size:13px;color:var(--gold2);animation:pop .4s ease}
+@keyframes pop{from{transform:scale(.85);opacity:0}to{transform:scale(1);opacity:1}}
+
+/* RESULT */
+.result-complete{text-align:center;margin-bottom:20px}
+.result-star{font-size:56px;margin-bottom:8px;display:block}
+.result-title{font-size:20px;font-weight:700;color:var(--text);margin-bottom:6px}
+.result-type-name{font-size:26px;font-weight:700;margin-bottom:4px}
+.result-tag{font-size:13px;color:var(--muted);margin-bottom:16px}
+.score-row{display:flex;justify-content:center;gap:8px;margin:16px 0;flex-wrap:wrap}
+.score-pill{display:flex;flex-direction:column;align-items:center;padding:10px 14px;background:#f6f2ff;border-radius:10px;min-width:64px}
+.score-pill-n{font-size:22px;font-weight:700;color:var(--text)}
+.score-pill-l{font-size:12px;color:var(--muted);margin-top:2px}
+.score-pill.top{background:#ede4ff;border:2px solid var(--purple)}
+.score-pill.top .score-pill-n{color:var(--purple)}
+.divider{height:1px;background:linear-gradient(90deg,transparent,#ddd,transparent);margin:16px 0}
+.msg-box{background:linear-gradient(135deg,#f5f0ff,#fdf8ff);border:1.5px solid #e0d4f5;border-radius:12px;padding:16px;margin:14px 0;text-align:center}
+.msg-box-title{font-size:13px;font-weight:700;color:var(--purple);margin-bottom:6px}
+.msg-box-text{font-size:13px;color:var(--text);line-height:1.8}
+.screenshot-hint{background:rgba(201,168,76,.1);border:1px solid rgba(201,168,76,.3);border-radius:10px;padding:14px;margin:14px 0;font-size:13px;color:var(--gold2);line-height:1.8;text-align:center}
+
+.footer{text-align:center;font-size:11px;color:rgba(255,255,255,.2);margin-top:22px}
+.back{display:block;text-align:center;color:rgba(255,255,255,.35);font-size:13px;margin-top:14px;cursor:pointer;text-decoration:underline}
+.back:hover{color:rgba(255,255,255,.6)}
+</style>
+</head>
+<body>
+<div id="app">
+
+<!-- ===== LANDING ===== -->
+<div id="s-landing" class="screen active">
+  <div class="logo">
+    <span class="logo-star">✨</span>
+    <div class="logo-label">Soul Diet</div>
+    <div class="logo-title">魂タイプ診断</div>
+    <div class="logo-sub">全20問・本格診断テスト<br>直感で選んでください</div>
+  </div>
+  <div class="card">
+    <p style="font-size:14px;color:var(--muted);line-height:1.8;margin-bottom:20px;text-align:center">
+      「風・火・水・地」4つの魂タイプから<br>あなたのタイプを診断します。<br>
+      <br>
+      診断後、ユキちゃんから<br>詳しいフィードバックをお届けします✨
+    </p>
+    <button class="btn btn-primary" onclick="startQuiz()">診断をスタートする</button>
+  </div>
+  <div class="footer">ソウルダイエット｜白男川ユキ</div>
+</div>
+
+<!-- ===== QUIZ ===== -->
+<div id="s-quiz" class="screen">
+  <div class="quiz-meta">
+    <span class="quiz-num" id="q-num">QUESTION 1</span>
+    <span class="quiz-frac" id="q-frac">1 / 20</span>
+  </div>
+  <div class="progress"><div class="progress-bar" id="q-bar" style="width:5%"></div></div>
+  <div id="encourage"></div>
+  <div class="quiz-card">
+    <div class="quiz-q" id="q-text"></div>
+    <div class="opts" id="q-opts"></div>
+  </div>
+  <span class="back" onclick="confirmBack()">← 最初からやり直す</span>
+</div>
+
+<!-- ===== RESULT ===== -->
+<div id="s-result" class="screen">
+  <div id="result-content"></div>
+</div>
+
+</div><!-- /app -->
+
+<script>
+const QS = [
+  {q:"自分にとって「安心できる状態」とは？",o:["自由に動けること","はっきりした目標があること","愛され、受け入れられていること","安定した環境とルールがあること"]},
+  {q:"決断するときに大事にしていることは？",o:["ピンとくる直感","効率と結果","周囲との調和","根拠やデータ"]},
+  {q:"休日の過ごし方として一番近いのは？",o:["気の向くままに出かける","アクティブに予定をこなす","ゆったりリラックス","家の中で整える・片付け"]},
+  {q:"ストレスを感じるときの特徴は？",o:["飽きて集中できない","イライラして攻撃的になる","不安になって涙が出る","固まり動けなくなる"]},
+  {q:"子どもの頃、どんなタイプだったと思いますか？",o:["好奇心旺盛で落ち着きがなかった","負けず嫌いで何でも一番になりたがった","友だちと仲良くするのが得意だった","物静かでマイペースだった"]},
+  {q:"自分にとって「理想のリーダー像」は？",o:["柔軟で面白い発想を持っている人","熱く情熱的に引っ張ってくれる人","思いやりがあり寄り添ってくれる人","冷静で堅実に道を示してくれる人"]},
+  {q:"初めての場所に行くとどう感じる？",o:["ワクワクする！","目的を果たせるかが気になる","緊張してしまう","まず情報を調べて準備する"]},
+  {q:"人に褒められると嬉しい言葉は？",o:["発想が面白い！","行動力がすごい！","優しいね、癒される","丁寧で安心できる"]},
+  {q:"目標を立てたときにありがちなことは？",o:["新しいアイデアに飛びついて脱線する","過集中して空回りする","なかなか始められない","やらなくていい理由を探してしまう"]},
+  {q:"ダイエットに関して一番共感する悩みは？",o:["続かない・飽きる","やりすぎてしまう","やろうと思っても動けない","頭で考えすぎて行動が止まる"]},
+  {q:"つい買ってしまうものは？",o:["流行りの面白いアイテム","成果が出そうなグッズ","癒される雑貨やアロマ","実用性の高い日用品"]},
+  {q:"人間関係での失敗あるあるは？",o:["相手の話をちゃんと聞いてなかった","言いすぎてしまった","空気を読みすぎて疲れた","慎重すぎて距離が縮まらなかった"]},
+  {q:"子どもの頃の遊び方の傾向は？",o:["ごっこ遊び・空想遊びが好き","競争ゲームで燃えていた","お世話ごっこや人形遊びが好き","積み木やルールのある遊びが好き"]},
+  {q:"行動が止まるときのパターンは？",o:["面白みを感じなくなった","結果が出ないと落ち込んだ","誰かの反応を気にしてしまう","完璧を求めて動けなくなった"]},
+  {q:"周囲の人からどんな性格だと言われることが多いですか？",o:["明るくてユニーク、自由な雰囲気がある","頼りがいがある、目標に向かって努力できる人","優しくて思いやりがある、親しみやすい","落ち着いていて安定感がある、癒し系"]},
+  {q:"あなたが「変わりたい」と感じる点に一番近いのは？",o:["自分に集中できる時間をもっとつくりたい","焦らず、もっとゆったり過ごせるようになりたい","感情に左右されすぎないようになりたい","変化を楽しみながら柔軟に生きたい"]},
+  {q:"好きな食べ物の傾向は？",o:["軽くて香りのあるもの","スパイシーで刺激的なもの","水分多めでやさしい味","しっかりした噛みごたえのあるもの"]},
+  {q:"自分の「長所」だと感じることに一番近いのはどれですか？",o:["柔軟で適応力がある","努力家で粘り強い","思いやりがあり、共感できる","落ち着いていて安定している"]},
+  {q:"旅行に行くならどんな旅が好き？",o:["ノープランでぶらり旅","アクティブな冒険系","温泉・癒し系の宿","ガイド付きでしっかり予定がある旅"]},
+  {q:"あなたの「理想のライフスタイル」に一番近いものは？",o:["自由で変化に富んだ毎日","成果を出して自己実現していく日々","愛にあふれた人間関係の中で生きる","安定した暮らしと自分のペースを守れる生活"]}
+];
+// 0=風 1=火 2=水 3=地
+
+const TYPE_INFO = {
+  wind:{emoji:"🌪",name:"風タイプ",color:"#2bb567"},
+  fire:{emoji:"🔥",name:"火タイプ",color:"#e05a2b"},
+  water:{emoji:"💧",name:"水タイプ",color:"#2b7de0"},
+  earth:{emoji:"🌱",name:"地タイプ",color:"#7c5c1e"}
+};
+
+let scores = {wind:0,fire:0,water:0,earth:0};
+let qIdx = 0;
+
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0,0);
+}
+
+function startQuiz(){
+  scores={wind:0,fire:0,water:0,earth:0};
+  qIdx=0;
+  showScreen('s-quiz');
+  renderQ();
+}
+
+function confirmBack(){
+  if(confirm('最初からやり直しますか？')){
+    showScreen('s-landing');
+  }
+}
+
+function renderQ(){
+  const q = QS[qIdx];
+  document.getElementById('q-num').textContent = `QUESTION ${qIdx+1}`;
+  document.getElementById('q-frac').textContent = `${qIdx+1} / 20`;
+  document.getElementById('q-bar').style.width = `${((qIdx+1)/20)*100}%`;
+  document.getElementById('q-text').textContent = q.q;
+  document.getElementById('q-opts').innerHTML = q.o.map((o,i)=>`
+    <button class="opt" onclick="answer(${i})">
+      <span class="opt-n">${i+1}</span><span>${o}</span>
+    </button>`).join('');
+  const enc = document.getElementById('encourage');
+  if(qIdx===10){enc.className='encourage';enc.textContent='あと半分！よく来ましたね✨';}
+  else if(qIdx===15){enc.className='encourage';enc.textContent='あと5問！もうすぐです🌟';}
+  else enc.textContent='';
+}
+
+function answer(i){
+  const keys=['wind','fire','water','earth'];
+  scores[keys[i]]++;
+  qIdx++;
+  if(qIdx>=20) showResult();
+  else renderQ();
+}
+
+function showResult(){
+  const order=['wind','fire','water','earth'];
+  const max = Math.max(...Object.values(scores));
+  const tops = order.filter(k=>scores[k]===max);
+
+  const topInfo = tops.map(k=>TYPE_INFO[k]);
+
+  const typeDisplay = tops.length > 1
+    ? topInfo.map(t=>`<span style="color:${t.color}">${t.emoji}${t.name}</span>`).join(' & ')
+    : `<span style="color:${topInfo[0].color}">${topInfo[0].emoji}${topInfo[0].name}</span>`;
+
+  const pillsHtml = order.map(k=>{
+    const t = TYPE_INFO[k];
+    const isTop = scores[k]===max;
+    return `<div class="score-pill ${isTop?'top':''}">
+      <span class="score-pill-n" style="${isTop?'color:'+t.color:''}">${scores[k]}</span>
+      <span class="score-pill-l">${t.emoji}${t.name.replace('タイプ','')}</span>
+    </div>`;
+  }).join('');
+
+  document.getElementById('result-content').innerHTML = `
+    <div class="card" style="margin-bottom:14px">
+      <div class="result-complete">
+        <span class="result-star">✨</span>
+        <div class="result-title">診断が完了しました！</div>
+        <div style="font-size:13px;color:var(--muted);margin:8px 0 16px">あなたのスコア</div>
+        <div class="score-row">${pillsHtml}</div>
+        <div class="divider"></div>
+        <div style="font-size:13px;color:var(--muted);margin-bottom:8px">あなたのタイプ</div>
+        <div class="result-type-name">${typeDisplay}</div>
+      </div>
+
+      <div class="msg-box">
+        <div class="msg-box-title">ユキちゃんからフィードバックをお届けします✨</div>
+        <div class="msg-box-text">
+          あなたの魂タイプの詳しい特徴・ダイエットへの活かし方は<br>
+          ユキちゃんがお伝えします。楽しみにお待ちください！
+        </div>
+      </div>
+
+      <div class="screenshot-hint">
+        📸 このページをスクリーンショットして<br>ユキちゃんに送ってください
+      </div>
+    </div>
+    <div class="card">
+      <button class="btn btn-outline" onclick="startQuiz()">もう一度診断する</button>
+    </div>`;
+
+  showScreen('s-result');
+}
+</script>
+</body>
+</html>
